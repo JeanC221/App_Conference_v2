@@ -1,4 +1,3 @@
-// lib/app/modules/event_details/controllers/event_details_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../domain/entities/event.dart';
@@ -30,7 +29,6 @@ class EventDetailsController extends GetxController {
     super.onInit();
     
     print('EventDetailsController onInit con args: ${Get.arguments}');
-    // Obtener argumentos de la navegación
     final Map<String, dynamic>? args = Get.arguments;
     if (args != null) {
       if (args.containsKey('trackId')) {
@@ -48,21 +46,17 @@ class EventDetailsController extends GetxController {
     }
   }
 
-  // Método para cargar los eventos de un track
   void loadTrackEvents(String trackId) async {
     isLoading.value = true;
     try {
       print('Obteniendo track con ID: $trackId');
-      // Cargar información del track
       track.value = await _trackRepository.getTrackById(trackId);
       print('Track obtenido: ${track.value?.name}');
       
-      // Cargar eventos asociados al track
       print('Cargando eventos del track...');
       events.value = await _eventRepository.getEventsByTrack(trackId);
       print('Eventos cargados: ${events.length}');
       
-      // Limpiar evento seleccionado para mostrar la lista
       selectedEvent.value = null;
     } catch (e, stackTrace) {
       print('Error al cargar eventos del track: $e');
@@ -90,7 +84,6 @@ class EventDetailsController extends GetxController {
       );
 
       if (selectedEvent.value != null) {
-        // Cargar información adicional
         track.value = await _trackRepository.getTrackById(selectedEvent.value!.trackId);
         isSubscribed.value = await _eventRepository.isSubscribedToEvent(selectedEvent.value!.id);
       }

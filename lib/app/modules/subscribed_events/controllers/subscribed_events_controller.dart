@@ -1,4 +1,3 @@
-// lib/app/modules/subscribed_events/controllers/subscribed_events_controller.dart (actualizado)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../domain/entities/event.dart';
@@ -23,7 +22,6 @@ class SubscribedEventsController extends GetxController {
     _connectionService.isOnline.listen((value) {
       isOnline.value = value;
       if (value) {
-        // Refrescar datos cuando se recupere la conexión
         loadSubscribedEvents();
       }
     });
@@ -35,11 +33,9 @@ class SubscribedEventsController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Obtener eventos suscritos
       final events = await _eventRepository.getSubscribedEvents();
       subscribedEvents.value = events;
 
-      // Separar en próximos y pasados
       upcomingEvents.value = events.where((event) => !event.isPast).toList();
       pastEvents.value = events.where((event) => event.isPast).toList();
     } catch (e) {

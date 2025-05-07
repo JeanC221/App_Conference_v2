@@ -39,7 +39,6 @@ class HomeController extends GetxController {
           .take(5)
           .toList();
     } catch (e) {
-      // Manejar error
     }
   }
   
@@ -48,7 +47,7 @@ class HomeController extends GetxController {
       final subscribedEvents = await _eventRepository.getSubscribedEvents();
       subscribedEventIds.value = subscribedEvents.map((e) => e.id).toList();
     } catch (e) {
-      // Manejar error
+      
     }
   }
   

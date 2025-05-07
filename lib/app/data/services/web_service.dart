@@ -3,7 +3,7 @@ import 'package:get/get.dart' hide Response;
 
 class HttpService extends GetxService {
   final Dio _dio = Dio();
-  final String baseUrl = 'https://unidb.openlab.uninorte.edu.co/api';
+  final String baseUrl = 'baseurl';
 
   Future<HttpService> init() async {
     _dio.options.baseUrl = baseUrl;

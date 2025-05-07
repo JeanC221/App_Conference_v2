@@ -7,7 +7,6 @@ class FeedbackLocalDatasource {
       Hive.box<EventFeedback>(StorageService.feedbackBoxName);
   
   Future<void> saveFeedback(EventFeedback feedback) async {
-    // Usamos DateTime como parte de la clave para evitar conflictos
     final key = '${feedback.eventId}_${feedback.submittedAt.millisecondsSinceEpoch}';
     await _feedbackBox.put(key, feedback);
   }

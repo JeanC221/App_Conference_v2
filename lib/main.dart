@@ -27,7 +27,6 @@ import 'app/core/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Capturar errores no manejados
   FlutterError.onError = (FlutterErrorDetails details) {
     print('FlutterError: ${details.exception}');
     print('Stack trace: ${details.stack}');
@@ -37,17 +36,14 @@ void main() async {
   try {
     print('Iniciando aplicación...');
     
-    // Configuración del sistema
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
     
     print('Inicializando Hive...');
-    // Inicializar Hive
     await Hive.initFlutter();
     
-    // Registrar adaptadores
     print('Registrando adaptadores...');
     if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(TrackAdapter());
@@ -59,7 +55,6 @@ void main() async {
       Hive.registerAdapter(EventFeedbackAdapter());
     }
     
-    // Abrir cajas
     print('Abriendo cajas de Hive...');
     if (!Hive.isBoxOpen('tracks')) {
       await Hive.openBox<Track>('tracks');
@@ -80,7 +75,6 @@ void main() async {
       await Hive.openBox<List<String>>('stringLists');
     }
     
-    // Inicializar servicios
     print('Inicializando servicios...');
     final storageService = await StorageService().init();
     Get.put(storageService);
@@ -91,7 +85,6 @@ void main() async {
     final connectionService = await ConnectionService().init();
     Get.put(connectionService);
     
-    // Fuentes de datos
     print('Inicializando fuentes de datos...');
     Get.put(TrackLocalDatasource());
     Get.put(EventLocalDatasource());
@@ -101,13 +94,11 @@ void main() async {
     Get.put(EventRemoteDatasource());
     Get.put(FeedbackRemoteDatasource());
     
-    // Repositorios - IMPORTANTE: usa put para asegurar que se registren
     print('Inicializando repositorios...');
     Get.put<TrackRepository>(TrackRepositoryImpl());
     Get.put<EventRepository>(EventRepositoryImpl());
     Get.put<FeedbackRepository>(FeedbackRepositoryImpl());
     
-    // Inicializar datos de ejemplo
     print('Inicializando datos de ejemplo...');
     final localDataProvider = LocalDataProvider();
     await localDataProvider.initializeIfEmpty();
@@ -132,7 +123,6 @@ void main() async {
   } catch (e, stackTrace) {
     print('Error en la inicialización: $e');
     print('Stack trace: $stackTrace');
-    // Mostrar una aplicación de error
     runApp(
       MaterialApp(
         home: Scaffold(
@@ -146,7 +136,6 @@ void main() async {
                 SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
-                    // Un intento de reiniciar la app
                     SystemNavigator.pop();
                   },
                   child: Text('Cerrar aplicación'),
@@ -160,29 +149,23 @@ void main() async {
   }
 }
 
-// lib/main.dart (parte de inicialización)
 Future<void> initializeServices() async {
-  // Inicializar Hive
   await Hive.initFlutter();
   
-  // Registrar adaptadores
   Hive.registerAdapter(TrackAdapter());
   Hive.registerAdapter(EventAdapter());
   Hive.registerAdapter(EventFeedbackAdapter());
   
-  // Abrir cajas de Hive
   await Hive.openBox<Track>('tracks');
   await Hive.openBox<Event>('events');
   await Hive.openBox<String>('subscribed_events');
   await Hive.openBox<EventFeedback>('feedback');
   await Hive.openBox<dynamic>('metadata');
   
-  // Inicializar servicios
   await Get.putAsync(() => StorageService().init());
   await Get.putAsync(() => HttpService().init());
   await Get.putAsync(() => ConnectionService().init());
   
-  // Datasources
   Get.put(TrackLocalDatasource());
   Get.put(EventLocalDatasource());
   Get.put(FeedbackLocalDatasource());
@@ -191,7 +174,6 @@ Future<void> initializeServices() async {
   Get.put(EventRemoteDatasource());
   Get.put(FeedbackRemoteDatasource());
   
-  // Repositorios
   Get.put<TrackRepository>(TrackRepositoryImpl(
     remoteDatasource: Get.find<TrackRemoteDatasource>(),
     localDatasource: Get.find<TrackLocalDatasource>(),

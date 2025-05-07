@@ -43,13 +43,10 @@ class Event {
     this.averageRating,
   });
 
-  // Check if event is in the past
   bool get isPast => dateTime.isBefore(DateTime.now());
 
-  // Check if event has available spots
   bool get hasAvailableSpots => currentParticipants < maxParticipants;
 
-  // Get number of available spots
   int get availableSpots => maxParticipants - currentParticipants;
 
   Map<String, dynamic> toJson() {

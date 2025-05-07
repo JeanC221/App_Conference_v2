@@ -21,24 +21,20 @@ class EventTracksController extends GetxController {
     _connectionService.isOnline.listen((value) {
       isOnline.value = value;
       if (value) {
-        // Refrescar datos cuando se recupere la conexión
         loadTracks();
       }
     });
     loadTracks();
   }
   
- // lib/app/modules/event_tracks/controllers/event_tracks_controller.dart
 void loadTracks() async {
   isLoading.value = true;
   
   try {
     print('Cargando tracks...');
-    // Obtener tracks
     tracks.value = await _trackRepository.getTracks();
     print('Tracks cargados: ${tracks.length}');
     
-    // Contar eventos para cada track
     for (final track in tracks) {
       print('Cargando eventos para track: ${track.id}');
       final events = await _eventRepository.getEventsByTrack(track.id);

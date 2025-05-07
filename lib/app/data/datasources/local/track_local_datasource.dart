@@ -16,7 +16,6 @@ class TrackLocalDatasource {
     final tracks = _tracksBox.values.toList();
     print('Obteniendo ${tracks.length} tracks desde local.');
     
-    // Si está vacío, agrega algunos tracks de ejemplo directamente
     if (tracks.isEmpty) {
       print('No hay tracks en local, intentando agregar algunos de ejemplo...');
       _addSampleTracks();
@@ -59,7 +58,6 @@ class TrackLocalDatasource {
   Track getTrackById(String id) {
     var track = _tracksBox.get(id);
     
-    // Si no existe el track, intentamos cargar los ejemplos
     if (track == null) {
       print('Track con ID $id no encontrado, intentando cargar ejemplos...');
       _addSampleTracks();

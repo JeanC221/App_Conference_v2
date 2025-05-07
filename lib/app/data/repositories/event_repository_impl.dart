@@ -22,16 +22,13 @@ class EventRepositoryImpl implements EventRepository {
     if (await _connectionService.isConnected()) {
       try {
         final events = await _remoteDatasource.getEvents();
-        // Guarda los datos remotos localmente
         await _localDatasource.saveEvents(events);
         return events;
       } catch (e) {
         print('Error obteniendo eventos remotos: $e');
-        // Si falla, usa datos locales
         return _localDatasource.getEvents();
       }
     } else {
-      // Sin conexión: usa datos locales
       return _localDatasource.getEvents();
     }
   }
@@ -41,7 +38,6 @@ class EventRepositoryImpl implements EventRepository {
     if (await _connectionService.isConnected()) {
       try {
         final events = await _remoteDatasource.getEventsByTrack(trackId);
-        // Guarda los datos en caché
         await _localDatasource.saveEvents(events);
         return events;
       } catch (e) {
@@ -73,18 +69,14 @@ class EventRepositoryImpl implements EventRepository {
       try {
         final success = await _remoteDatasource.subscribeToEvent(eventId);
         if (success) {
-          // Actualiza los datos locales
           await _localDatasource.subscribeToEvent(eventId);
         }
         return success;
       } catch (e) {
-        // En caso de error, guarda localmente pero marca para sincronización posterior
         await _localDatasource.subscribeToEvent(eventId);
-        // Aquí se podría implementar una cola de sincronización
         return true;
       }
     } else {
-      // Modo offline: guarda localmente
       await _localDatasource.subscribeToEvent(eventId);
       return true;
     }
