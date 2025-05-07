@@ -28,28 +28,35 @@ class EventTracksController extends GetxController {
     loadTracks();
   }
   
-  void loadTracks() async {
-    isLoading.value = true;
+ // lib/app/modules/event_tracks/controllers/event_tracks_controller.dart
+void loadTracks() async {
+  isLoading.value = true;
+  
+  try {
+    print('Cargando tracks...');
+    // Obtener tracks
+    tracks.value = await _trackRepository.getTracks();
+    print('Tracks cargados: ${tracks.length}');
     
-    try {
-      // Obtener tracks
-      tracks.value = await _trackRepository.getTracks();
-      
-      // Contar eventos para cada track
-      for (final track in tracks) {
-        final events = await _eventRepository.getEventsByTrack(track.id);
-        eventCounts[track.id] = events.length;
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load tracks. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
-      isLoading.value = false;
+    // Contar eventos para cada track
+    for (final track in tracks) {
+      print('Cargando eventos para track: ${track.id}');
+      final events = await _eventRepository.getEventsByTrack(track.id);
+      eventCounts[track.id] = events.length;
+      print('Eventos cargados para track ${track.id}: ${events.length}');
     }
+  } catch (e, stackTrace) {
+    print('Error al cargar tracks: $e');
+    print('Stack trace: $stackTrace');
+    Get.snackbar(
+      'Error',
+      'Failed to load tracks. Please try again.',
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  } finally {
+    isLoading.value = false;
   }
+}
   
   int getEventCountForTrack(String trackId) {
     return eventCounts[trackId] ?? 0;

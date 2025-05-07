@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 
 class StorageService extends GetxService {
   static const String tracksBoxName = 'tracks';
@@ -28,11 +27,12 @@ class StorageService extends GetxService {
   }
 
   Future<StorageService> init() async {
-    final appDocumentDir = await getApplicationDocumentsDirectory();
-    Hive.init(appDocumentDir.path);
-    
-    await Hive.openBox<String>('strings');
-    await Hive.openBox<List<String>>('stringLists');
+    if (!Hive.isBoxOpen('strings')) {
+      await Hive.openBox<String>('strings');
+    }
+    if (!Hive.isBoxOpen('stringLists')) {
+      await Hive.openBox<List<String>>('stringLists');
+    }
     
     return this;
   }
