@@ -1,3 +1,4 @@
+// lib/app/modules/event_details/controllers/event_details_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../domain/entities/event.dart';
@@ -24,26 +25,85 @@ class EventDetailsController extends GetxController {
   final TextEditingController feedbackController = TextEditingController();
   final RxDouble rating = 0.0.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    
+    print('EventDetailsController onInit con args: ${Get.arguments}');
+    // Obtener argumentos de la navegación
+    final Map<String, dynamic>? args = Get.arguments;
+    if (args != null) {
+      if (args.containsKey('trackId')) {
+        final String trackId = args['trackId'];
+        print('Cargando eventos para track: $trackId');
+        loadTrackEvents(trackId);
+      } else if (args.containsKey('eventId')) {
+        selectedEventId.value = args['eventId'];
+        print('Cargando detalles para evento: ${selectedEventId.value}');
+        loadEventDetails();
+      }
+    } else {
+      print('Error: No se recibieron argumentos para EventDetailsController');
+      isLoading.value = false;
+    }
+  }
+
+  // Método para cargar los eventos de un track
+  void loadTrackEvents(String trackId) async {
+    isLoading.value = true;
+    try {
+      print('Obteniendo track con ID: $trackId');
+      // Cargar información del track
+      track.value = await _trackRepository.getTrackById(trackId);
+      print('Track obtenido: ${track.value?.name}');
+      
+      // Cargar eventos asociados al track
+      print('Cargando eventos del track...');
+      events.value = await _eventRepository.getEventsByTrack(trackId);
+      print('Eventos cargados: ${events.length}');
+      
+      // Limpiar evento seleccionado para mostrar la lista
+      selectedEvent.value = null;
+    } catch (e, stackTrace) {
+      print('Error al cargar eventos del track: $e');
+      print('Stack trace: $stackTrace');
+      Get.snackbar(
+        'Error',
+        'No se pudieron cargar los eventos. Inténtalo de nuevo.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppTheme.errorColor,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   void loadEventDetails() async {
     if (selectedEventId.value.isEmpty) return;
 
     try {
+      isLoading.value = true;
       final allEvents = await _eventRepository.getEvents();
       selectedEvent.value = allEvents.firstWhereOrNull(
         (e) => e.id == selectedEventId.value,
       );
 
       if (selectedEvent.value != null) {
+        // Cargar información adicional
+        track.value = await _trackRepository.getTrackById(selectedEvent.value!.trackId);
         isSubscribed.value = await _eventRepository.isSubscribedToEvent(selectedEvent.value!.id);
       }
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to load event details',
+        'No se pudo cargar los detalles del evento',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppTheme.errorColor,
         colorText: Colors.white,
       );
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -69,17 +129,17 @@ class EventDetailsController extends GetxController {
         success = await _eventRepository.unsubscribeFromEvent(eventId);
         if (success) {
           isSubscribed.value = false;
-          _showSnackbar('Success', 'Unsubscribed from event');
+          _showSnackbar('Éxito', 'Te has dado de baja del evento');
         }
       } else {
         success = await _eventRepository.subscribeToEvent(eventId);
         if (success) {
           isSubscribed.value = true;
-          _showSnackbar('Success', 'Subscribed to event');
+          _showSnackbar('Éxito', 'Te has suscrito al evento');
         }
       }
     } catch (e) {
-      _showSnackbar('Error', 'Failed to update subscription');
+      _showSnackbar('Error', 'No se pudo actualizar la suscripción');
     }
   }
 
@@ -106,7 +166,7 @@ class EventDetailsController extends GetxController {
     if (rating.value == 0) {
       Get.snackbar(
         'Error',
-        'Please provide a rating',
+        'Por favor proporciona una calificación',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppTheme.errorColor,
         colorText: Colors.white,
@@ -136,8 +196,8 @@ class EventDetailsController extends GetxController {
         feedbackController.clear();
         rating.value = 0;
         Get.snackbar(
-          'Success',
-          'Feedback submitted',
+          'Éxito',
+          'Comentario enviado',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppTheme.successColor,
           colorText: Colors.white,
@@ -155,7 +215,7 @@ class EventDetailsController extends GetxController {
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to submit feedback',
+        'No se pudo enviar el comentario',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppTheme.errorColor,
         colorText: Colors.white,

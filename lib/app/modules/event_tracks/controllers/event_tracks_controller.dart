@@ -64,5 +64,5 @@ void loadTracks() async {
   
   void navigateToTrackEvents(String trackId, String trackName) {
     Get.toNamed('/event-details', arguments: {'trackId': trackId, 'trackName': trackName});
-  }
+}
 }
