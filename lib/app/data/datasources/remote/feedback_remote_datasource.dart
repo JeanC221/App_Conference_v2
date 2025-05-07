@@ -17,7 +17,7 @@ class FeedbackRemoteDatasource {
 
   Future<List<EventFeedback>> getFeedbackForEvent(String eventId) async {
     try {
-      final response = await _httpService.get('$_endpoint?eventId=$eventId');
+      final response = await _httpService.get(_endpoint, queryParameters: {'eventId': eventId});
       return (response.data as List)
           .map((json) => EventFeedback.fromJson(json))
           .toList();

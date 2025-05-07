@@ -19,7 +19,7 @@ class EventRemoteDatasource {
 
   Future<List<Event>> getEventsByTrack(String trackId) async {
     try {
-      final response = await _httpService.get('$_endpoint?trackId=$trackId');
+      final response = await _httpService.get('$_endpoint', queryParameters: {'trackId': trackId});
       return (response.data as List)
           .map((json) => Event.fromJson(json))
           .toList();

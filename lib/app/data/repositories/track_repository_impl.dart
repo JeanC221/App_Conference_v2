@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import '../../domain/repositories/track_repository.dart';
 import '../../domain/entities/track.dart';
 import '../datasources/remote/track_remote_datasource.dart';
@@ -6,9 +5,17 @@ import '../datasources/local/track_local_datasource.dart';
 import '../services/connection_service.dart';
 
 class TrackRepositoryImpl implements TrackRepository {
-  final TrackRemoteDatasource _remoteDatasource = Get.find<TrackRemoteDatasource>();
-  final TrackLocalDatasource _localDatasource = Get.find<TrackLocalDatasource>();
-  final ConnectionService _connectionService = Get.find<ConnectionService>();
+  final TrackRemoteDatasource _remoteDatasource;
+  final TrackLocalDatasource _localDatasource;
+  final ConnectionService _connectionService;
+
+  TrackRepositoryImpl({
+    required TrackRemoteDatasource remoteDatasource,
+    required TrackLocalDatasource localDatasource,
+    required ConnectionService connectionService,
+  })  : _remoteDatasource = remoteDatasource,
+        _localDatasource = localDatasource,
+        _connectionService = connectionService;
 
   @override
   Future<List<Track>> getTracks() async {

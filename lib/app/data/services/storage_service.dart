@@ -7,6 +7,8 @@ class StorageService extends GetxService {
   static const String eventsBoxName = 'events';
   static const String subscribedEventsBoxName = 'subscribed_events';
   static const String feedbackBoxName = 'feedback';
+  static const String metadataBoxName = 'metadata'; 
+
 
   String? getString(String key) {
     return Hive.box<String>('strings').get(key);

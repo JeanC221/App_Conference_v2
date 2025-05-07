@@ -160,21 +160,53 @@ void main() async {
   }
 }
 
+// lib/main.dart (parte de inicialización)
 Future<void> initializeServices() async {
+  // Inicializar Hive
+  await Hive.initFlutter();
+  
+  // Registrar adaptadores
+  Hive.registerAdapter(TrackAdapter());
+  Hive.registerAdapter(EventAdapter());
+  Hive.registerAdapter(EventFeedbackAdapter());
+  
+  // Abrir cajas de Hive
+  await Hive.openBox<Track>('tracks');
+  await Hive.openBox<Event>('events');
+  await Hive.openBox<String>('subscribed_events');
+  await Hive.openBox<EventFeedback>('feedback');
+  await Hive.openBox<dynamic>('metadata');
+  
+  // Inicializar servicios
   await Get.putAsync(() => StorageService().init());
   await Get.putAsync(() => HttpService().init());
   await Get.putAsync(() => ConnectionService().init());
-
-  Get.lazyPut<TrackRemoteDatasource>(() => TrackRemoteDatasource());
-  Get.lazyPut<EventRemoteDatasource>(() => EventRemoteDatasource());
-  Get.lazyPut<FeedbackRemoteDatasource>(() => FeedbackRemoteDatasource());
   
-  Get.put(LocalDataProvider());
-  Get.lazyPut<TrackLocalDatasource>(() => TrackLocalDatasource());
-  Get.lazyPut<EventLocalDatasource>(() => EventLocalDatasource());
-  Get.lazyPut<FeedbackLocalDatasource>(() => FeedbackLocalDatasource());
+  // Datasources
+  Get.put(TrackLocalDatasource());
+  Get.put(EventLocalDatasource());
+  Get.put(FeedbackLocalDatasource());
   
-  Get.put<TrackRepository>(TrackRepositoryImpl());
-  Get.lazyPut<EventRepository>(() => EventRepositoryImpl());
-  Get.lazyPut<FeedbackRepository>(() => FeedbackRepositoryImpl());
+  Get.put(TrackRemoteDatasource());
+  Get.put(EventRemoteDatasource());
+  Get.put(FeedbackRemoteDatasource());
+  
+  // Repositorios
+  Get.put<TrackRepository>(TrackRepositoryImpl(
+    remoteDatasource: Get.find<TrackRemoteDatasource>(),
+    localDatasource: Get.find<TrackLocalDatasource>(),
+    connectionService: Get.find<ConnectionService>(),
+  ));
+  
+  Get.put<EventRepository>(EventRepositoryImpl(
+    remoteDatasource: Get.find<EventRemoteDatasource>(),
+    localDatasource: Get.find<EventLocalDatasource>(),
+    connectionService: Get.find<ConnectionService>(),
+  ));
+  
+  Get.put<FeedbackRepository>(FeedbackRepositoryImpl(
+    remoteDatasource: Get.find<FeedbackRemoteDatasource>(),
+    localDatasource: Get.find<FeedbackLocalDatasource>(),
+    connectionService: Get.find<ConnectionService>(),
+  ));
 }

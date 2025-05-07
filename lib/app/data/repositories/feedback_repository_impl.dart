@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+// lib/app/data/repositories/feedback_repository_impl.dart
 import '../../domain/repositories/feedback_repository.dart';
 import '../../domain/entities/feedback.dart';
 import '../datasources/remote/feedback_remote_datasource.dart';
@@ -6,9 +6,17 @@ import '../datasources/local/feedback_local_datasource.dart';
 import '../services/connection_service.dart';
 
 class FeedbackRepositoryImpl implements FeedbackRepository {
-  final FeedbackRemoteDatasource _remoteDatasource = Get.find<FeedbackRemoteDatasource>();
-  final FeedbackLocalDatasource _localDatasource = Get.find<FeedbackLocalDatasource>();
-  final ConnectionService _connectionService = Get.find<ConnectionService>();
+  final FeedbackRemoteDatasource _remoteDatasource;
+  final FeedbackLocalDatasource _localDatasource;
+  final ConnectionService _connectionService;
+
+  FeedbackRepositoryImpl({
+    required FeedbackRemoteDatasource remoteDatasource,
+    required FeedbackLocalDatasource localDatasource,
+    required ConnectionService connectionService,
+  })  : _remoteDatasource = remoteDatasource,
+        _localDatasource = localDatasource,
+        _connectionService = connectionService;
 
   @override
   Future<bool> submitFeedback(EventFeedback feedback) async {

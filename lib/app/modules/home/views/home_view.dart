@@ -1,3 +1,4 @@
+import 'package:conference_app/app/core/widgets/connection_status.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
@@ -14,17 +15,24 @@ class HomeView extends GetView<HomeController> {
         title: 'Conference App',
         showBackButton: false,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              _buildUpcomingEvents(),
-              _buildMenuOptions(),
-            ],
+      body: Column(
+        children: [
+          const ConnectionStatus(), 
+          Expanded(
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    _buildUpcomingEvents(),
+                    _buildMenuOptions(),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,

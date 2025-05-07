@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import '../../domain/entities/event.dart';
 import '../models/track_model.dart';
-import '../models/feedback_model.dart';
 import '../services/storage_service.dart';
 import 'package:hive/hive.dart';
 
