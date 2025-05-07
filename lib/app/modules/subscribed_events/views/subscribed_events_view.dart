@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/subscribed_events_controller.dart';
-import '../../../data/models/event_model.dart';
+import '../../../domain/entities/event.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/conference_app_bar.dart';
 import '../../../core/widgets/animated_list_item.dart';

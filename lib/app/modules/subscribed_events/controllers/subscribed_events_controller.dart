@@ -1,19 +1,33 @@
+// lib/app/modules/subscribed_events/controllers/subscribed_events_controller.dart (actualizado)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/models/event_model.dart';
-import '../../../data/providers/local_data_provider.dart';
+import '../../../domain/entities/event.dart';
+import '../../../domain/repositories/event_repository.dart';
+import '../../../data/services/connection_service.dart';
 
 class SubscribedEventsController extends GetxController {
-  final LocalDataProvider _localDataProvider = LocalDataProvider();
+  final EventRepository _eventRepository = Get.find<EventRepository>();
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
 
   final RxList<Event> subscribedEvents = <Event>[].obs;
   final RxList<Event> upcomingEvents = <Event>[].obs;
   final RxList<Event> pastEvents = <Event>[].obs;
   final RxBool isLoading = true.obs;
+  final RxBool isOnline = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    
+    isOnline.value = _connectionService.isOnline.value;
+    _connectionService.isOnline.listen((value) {
+      isOnline.value = value;
+      if (value) {
+        // Refrescar datos cuando se recupere la conexión
+        loadSubscribedEvents();
+      }
+    });
+    
     loadSubscribedEvents();
   }
 
@@ -21,11 +35,11 @@ class SubscribedEventsController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Fetch all subscribed events
-      final events = _localDataProvider.getSubscribedEvents();
+      // Obtener eventos suscritos
+      final events = await _eventRepository.getSubscribedEvents();
       subscribedEvents.value = events;
 
-      // Separate into upcoming and past events
+      // Separar en próximos y pasados
       upcomingEvents.value = events.where((event) => !event.isPast).toList();
       pastEvents.value = events.where((event) => event.isPast).toList();
     } catch (e) {
@@ -52,7 +66,7 @@ class SubscribedEventsController extends GetxController {
 
   Future<void> unsubscribeFromEvent(String eventId) async {
     try {
-      await _localDataProvider.unsubscribeFromEvent(eventId);
+      await _eventRepository.unsubscribeFromEvent(eventId);
       loadSubscribedEvents();
 
       Get.snackbar(

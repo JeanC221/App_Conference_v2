@@ -1,41 +1,39 @@
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 class StorageService extends GetxService {
-  late SharedPreferences _prefs;
+  static const String tracksBoxName = 'tracks';
+  static const String eventsBoxName = 'events';
+  static const String subscribedEventsBoxName = 'subscribed_events';
+  static const String feedbackBoxName = 'feedback';
+
+  String? getString(String key) {
+    return Hive.box<String>('strings').get(key);
+  }
+
+  Future<bool> saveString(String key, String value) async {
+    await Hive.box<String>('strings').put(key, value);
+    return true;
+  }
+
+  List<String>? getStringList(String key) {
+    return Hive.box<List<String>>('stringLists').get(key);
+  }
+
+  Future<bool> saveStringList(String key, List<String> value) async {
+    await Hive.box<List<String>>('stringLists').put(key, value);
+    return true;
+  }
 
   Future<StorageService> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    final appDocumentDir = await getApplicationDocumentsDirectory();
+    Hive.init(appDocumentDir.path);
+    
+    await Hive.openBox<String>('strings');
+    await Hive.openBox<List<String>>('stringLists');
+    
     return this;
-  }
-
-  // Save a string value
-  Future<bool> saveString(String key, String value) async {
-    return await _prefs.setString(key, value);
-  }
-
-  // Get a string value
-  String? getString(String key) {
-    return _prefs.getString(key);
-  }
-
-  // Save a list of strings
-  Future<bool> saveStringList(String key, List<String> value) async {
-    return await _prefs.setStringList(key, value);
-  }
-
-  // Get a list of strings
-  List<String>? getStringList(String key) {
-    return _prefs.getStringList(key);
-  }
-
-  // Remove a value
-  Future<bool> remove(String key) async {
-    return await _prefs.remove(key);
-  }
-
-  // Clear all values
-  Future<bool> clear() async {
-    return await _prefs.clear();
   }
 }

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/models/event_model.dart';
-import '../../../data/models/track_model.dart';
-import '../../../data/models/feedback_model.dart';
-import '../../../data/providers/local_data_provider.dart';
+import '../../../domain/entities/event.dart';
+import '../../../domain/entities/track.dart';
+import '../../../domain/entities/feedback.dart';
+import '../../../domain/repositories/event_repository.dart';
+import '../../../domain/repositories/track_repository.dart';
+import '../../../domain/repositories/feedback_repository.dart';
 import '../../../core/theme/app_theme.dart';
 
 class EventDetailsController extends GetxController {
-  final LocalDataProvider _localDataProvider = LocalDataProvider();
+  final EventRepository _eventRepository = Get.find<EventRepository>();
+  final TrackRepository _trackRepository = Get.find<TrackRepository>();
+  final FeedbackRepository _feedbackRepository = Get.find<FeedbackRepository>();
 
   final RxList<Event> events = <Event>[].obs;
   final Rx<Track?> track = Rx<Track?>(null);
@@ -20,60 +24,17 @@ class EventDetailsController extends GetxController {
   final TextEditingController feedbackController = TextEditingController();
   final RxDouble rating = 0.0.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-
-    if (Get.arguments != null) {
-      if (Get.arguments['trackId'] != null) {
-        loadEventsByTrack(Get.arguments['trackId']);
-      }
-
-      if (Get.arguments['eventId'] != null) {
-        selectedEventId.value = Get.arguments['eventId'];
-        loadEventDetails();
-      }
-    }
-  }
-
-  @override
-  void onClose() {
-    feedbackController.dispose();
-    super.onClose();
-  }
-
-  void loadEventsByTrack(String trackId) {
-    isLoading.value = true;
-
-    // Get track details
-    final tracks = _localDataProvider.getTracks();
-    track.value = tracks.firstWhere(
-      (t) => t.id == trackId,
-      orElse: () => Track(
-        id: '',
-        name: 'Unknown Track',
-        description: '',
-      ),
-    );
-
-    // Get events for this track
-    events.value = _localDataProvider.getEventsByTrack(trackId);
-
-    isLoading.value = false;
-  }
-
-  void loadEventDetails() {
+  void loadEventDetails() async {
     if (selectedEventId.value.isEmpty) return;
 
     try {
-      final allEvents = _localDataProvider.getEvents();
+      final allEvents = await _eventRepository.getEvents();
       selectedEvent.value = allEvents.firstWhereOrNull(
         (e) => e.id == selectedEventId.value,
       );
 
       if (selectedEvent.value != null) {
-        isSubscribed.value =
-            _localDataProvider.isSubscribedToEvent(selectedEvent.value!.id);
+        isSubscribed.value = await _eventRepository.isSubscribedToEvent(selectedEvent.value!.id);
       }
     } catch (e) {
       Get.snackbar(
@@ -89,7 +50,12 @@ class EventDetailsController extends GetxController {
   void selectEvent(Event event) {
     selectedEventId.value = event.id;
     selectedEvent.value = event;
-    isSubscribed.value = _localDataProvider.isSubscribedToEvent(event.id);
+    _checkSubscriptionStatus();
+  }
+
+  Future<void> _checkSubscriptionStatus() async {
+    if (selectedEvent.value == null) return;
+    isSubscribed.value = await _eventRepository.isSubscribedToEvent(selectedEvent.value!.id);
   }
 
   Future<void> toggleSubscription() async {
@@ -100,13 +66,13 @@ class EventDetailsController extends GetxController {
 
     try {
       if (isSubscribed.value) {
-        success = await _localDataProvider.unsubscribeFromEvent(eventId);
+        success = await _eventRepository.unsubscribeFromEvent(eventId);
         if (success) {
           isSubscribed.value = false;
           _showSnackbar('Success', 'Unsubscribed from event');
         }
       } else {
-        success = await _localDataProvider.subscribeToEvent(eventId);
+        success = await _eventRepository.subscribeToEvent(eventId);
         if (success) {
           isSubscribed.value = true;
           _showSnackbar('Success', 'Subscribed to event');
@@ -164,26 +130,35 @@ class EventDetailsController extends GetxController {
       submittedAt: DateTime.now(),
     );
 
-    final success = await _localDataProvider.saveFeedback(feedback);
-
-    if (success) {
-      feedbackController.clear();
-      rating.value = 0;
+    try {
+      final success = await _feedbackRepository.submitFeedback(feedback);
+      if (success) {
+        feedbackController.clear();
+        rating.value = 0;
+        Get.snackbar(
+          'Success',
+          'Feedback submitted',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppTheme.successColor,
+          colorText: Colors.white,
+          borderRadius: 10,
+          margin: const EdgeInsets.all(10),
+          boxShadows: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        );
+      }
+    } catch (e) {
       Get.snackbar(
-        'Success',
-        'Feedback submitted',
+        'Error',
+        'Failed to submit feedback',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: AppTheme.errorColor,
         colorText: Colors.white,
-        borderRadius: 10,
-        margin: const EdgeInsets.all(10),
-        boxShadows: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
       );
     }
   }

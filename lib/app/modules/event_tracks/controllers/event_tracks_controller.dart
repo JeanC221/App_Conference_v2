@@ -1,34 +1,54 @@
 import 'package:get/get.dart';
-import '../../../data/models/track_model.dart';
-import '../../../data/providers/local_data_provider.dart';
+import '../../../domain/entities/track.dart';
+import '../../../domain/repositories/track_repository.dart';
+import '../../../domain/repositories/event_repository.dart';
+import '../../../data/services/connection_service.dart';
 
 class EventTracksController extends GetxController {
-  final LocalDataProvider _localDataProvider = LocalDataProvider();
+  final TrackRepository _trackRepository = Get.find<TrackRepository>();
+  final EventRepository _eventRepository = Get.find<EventRepository>();
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
   
   final RxList<Track> tracks = <Track>[].obs;
   final RxBool isLoading = true.obs;
   final RxMap<String, int> eventCounts = <String, int>{}.obs;
+  final RxBool isOnline = false.obs;
   
   @override
   void onInit() {
     super.onInit();
+    isOnline.value = _connectionService.isOnline.value;
+    _connectionService.isOnline.listen((value) {
+      isOnline.value = value;
+      if (value) {
+        // Refrescar datos cuando se recupere la conexión
+        loadTracks();
+      }
+    });
     loadTracks();
   }
   
-  void loadTracks() {
+  void loadTracks() async {
     isLoading.value = true;
     
-    // Get tracks
-    tracks.value = _localDataProvider.getTracks();
-    
-    // Count events for each track
-    final allEvents = _localDataProvider.getEvents();
-    for (final track in tracks) {
-      final count = allEvents.where((event) => event.trackId == track.id).length;
-      eventCounts[track.id] = count;
+    try {
+      // Obtener tracks
+      tracks.value = await _trackRepository.getTracks();
+      
+      // Contar eventos para cada track
+      for (final track in tracks) {
+        final events = await _eventRepository.getEventsByTrack(track.id);
+        eventCounts[track.id] = events.length;
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load tracks. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
     }
-    
-    isLoading.value = false;
   }
   
   int getEventCountForTrack(String trackId) {

@@ -286,17 +286,30 @@ class HomeView extends GetView<HomeController> {
                                   : AppTheme.successColor,
                             ),
                           ),
-                          Obx(() => controller.isSubscribed(event.id)
-                              ? const Icon(
-                                  Icons.bookmark_rounded,
-                                  color: AppTheme.primaryColor,
-                                  size: 18,
-                                )
-                              : const Icon(
+                          FutureBuilder<bool>(
+                            future: controller.isSubscribed(event.id),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Icon(
                                   Icons.bookmark_border_rounded,
                                   color: AppTheme.textSecondaryColor,
                                   size: 18,
-                                )),
+                                );
+                              }
+                              if (snapshot.hasData && snapshot.data!) {
+                                return const Icon(
+                                  Icons.bookmark_rounded,
+                                  color: AppTheme.primaryColor,
+                                  size: 18,
+                                );
+                              }
+                              return const Icon(
+                                Icons.bookmark_border_rounded,
+                                color: AppTheme.textSecondaryColor,
+                                size: 18,
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ],

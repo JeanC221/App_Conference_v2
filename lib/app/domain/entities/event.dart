@@ -1,12 +1,34 @@
+import 'package:hive/hive.dart';
+
+part 'event.g.dart';
+
+@HiveType(typeId: 2)
 class Event {
+  @HiveField(0)
   final String id;
+  
+  @HiveField(1)
   final String name;
+  
+  @HiveField(2)
   final String location;
+  
+  @HiveField(3)
   final DateTime dateTime;
+  
+  @HiveField(4)
   final int maxParticipants;
+  
+  @HiveField(5)
   final int currentParticipants;
+  
+  @HiveField(6)
   final String description;
+  
+  @HiveField(7)
   final String trackId;
+  
+  @HiveField(8)
   final double? averageRating;
 
   Event({
@@ -30,7 +52,6 @@ class Event {
   // Get number of available spots
   int get availableSpots => maxParticipants - currentParticipants;
 
-  // Convert to Map for storage
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -45,7 +66,6 @@ class Event {
     };
   }
 
-  // Create from Map
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
       id: json['id'],
