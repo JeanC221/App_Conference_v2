@@ -1,4 +1,3 @@
-// integration_test/app_test.dart
 import 'package:conference_app/app/data/services/connection_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
